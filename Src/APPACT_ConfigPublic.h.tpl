@@ -33,7 +33,7 @@
     {
     
         APPACT_ACTUATOR_NB,
-    } t_eAPPACT_Actuators;
+    } t_eAPPACT_ActInterface;
 
     /**
     * @brief Enum for Actuators drivers list.
@@ -51,7 +51,7 @@
         APPACT_ACTUATOR_STATE_DISABLE = 0,    /**< The actuator is unused in a system configuration */
         APPACT_ACTUATOR_STATE_ENABLE,         /**< The actuator is used in a system configuration */
         APPACT_ACTUATOR_STATE_NB,             /**< Number of actuator state */
-    } t_eAPPACT_ActuatorState;
+    } t_eAPPACT_ActInterfacetate;
 
     typedef enum 
     {

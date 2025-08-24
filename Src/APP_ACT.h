@@ -90,31 +90,13 @@
     t_eReturnCode APPACT_SetState(t_eCyclicModState f_State_e);
     /**
     *
-    *	@brief  Set sensor state enable/disable
-    *
-    *	@param[in]  f_Actuator_e         : actuator enum @ref t_eAPPSNS_Sensors
-    *	@param[in]  f_SnsState_pe   : storage for the value 
-    * 
-    */
-    t_eReturnCode APPACT_Set_ActuatorState(t_eAPPACT_Actuators f_Actuator_e, t_eAPPACT_ActuatorState f_ActState_e);
-    /**
-    *
-    *	@brief  Get sensor state enable/disable
-    *
-    *	@param[in]  f_Sns_e         : actuator enum @ref t_eAPPSNS_Sensors
-    *	@param[in]  f_SnsState_pe   : storage for the value 
-    * 
-    */
-    t_eReturnCode APPACT_Get_ActuatorState(t_eAPPACT_Actuators f_Actuator_e, t_eAPPACT_ActuatorState *f_ActState_pe);
-    /**
-    *
     *	@brief  Get actuator value 
     *
     *	@param[in]  f_actuator_e   : actuator enum
     *	@param[in]  f_value_ps16   : storage for the value 
     * 
     */
-    t_eReturnCode APPACT_Get_ActValue(t_eAPPACT_Actuators f_actuator_e, t_uAPPACT_GetValue * f_actValue_pu);
+    t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 * f_actValue_pf32);
     /**
     *
     *	@brief      Set value for an actuator
@@ -123,7 +105,7 @@
     *	@param[in] f_value_s16 : value to set
     *
     */
-    t_eReturnCode APPACT_Set_ActValue(t_eAPPACT_Actuators f_actuator_e, t_uAPPACT_SetValue  f_actValue_u);
+    t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32  f_actValue_f32);
 
 #endif // APP_ACT_H_INCLUDED           
 //************************************************************************************
