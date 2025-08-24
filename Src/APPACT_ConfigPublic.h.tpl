@@ -31,8 +31,14 @@
     */
     typedef enum
     {
+        APPACT_ACTITF_MTR_XL_PULSE = 0,       /**< Actuator Device MTR_XL, Interface PULSE, Moteur X Left Pulses */
+        APPACT_ACTITF_MTR_XL_SPEED,             /**< Actuator Device MTR_XL, Interface SPEED, Moteur X Left Speed */
+        APPACT_ACTITF_MTR_Y_PULSE,              /**< Actuator Device MTR_Y, Interface PULSE, Moteur Y Pulses */
+        APPACT_ACTITF_MTR_Y_SPEED,              /**< Actuator Device MTR_Y, Interface SPEED, Moteur Y Speed */
+        APPACT_ACTITF_MTR_Z_PULSE,              /**< Actuator Device MTR_Z, Interface PULSE, Moteur Z Pulses */
+        APPACT_ACTITF_MTR_Z_SPEED,              /**< Actuator Device MTR_Z, Interface SPEED, Moteur Z Speed */
     
-        APPACT_ACTUATOR_NB,
+        APPACT_ACTITF_NB,
     } t_eAPPACT_ActInterface;
 
     /**
@@ -40,39 +46,31 @@
     */
     typedef enum
     {
+        APPACT_DRV_CL42T = 0,              /**< CL42T Driver  */
     
-        APPACT_DRIVER_NB,
-    } t_eAPPACT_Drivers;
+        APPACT_DRV_NB,
+    } t_eAPPACT_ActDriverList;
+
+    /**
+    * @brief Enumeration of all sensors device list.
+    */
+    typedef enum
+    {
+        APPACT_ACTDVC_MTR_XL = 0,
+        APPACT_ACTDVC_MTR_Y,
+        APPACT_ACTDVC_MTR_Z,
+    
+        APPACT_ACTDVC_NB,
+    } t_eAPPACT_ActDeviceList;
 
     /* CAUTION : Automatic generated code section for Enum: End */
-	//-----------------------------ENUM TYPES-----------------------------//
-    typedef enum 
-    {
-        APPACT_ACTUATOR_STATE_DISABLE = 0,    /**< The actuator is unused in a system configuration */
-        APPACT_ACTUATOR_STATE_ENABLE,         /**< The actuator is used in a system configuration */
-        APPACT_ACTUATOR_STATE_NB,             /**< Number of actuator state */
-    } t_eAPPACT_ActInterfacetate;
-
-    typedef enum 
-    {
-        APPACT_DRIVER_STATE_DISABLE = 0,      /**< The driver is used in a system configuration */
-        APPACT_DRIVER_STATE_ENABLE,           /**< The driver is used in a system configuration */
-        APPACT_DRIVER_STATE_NB,               /**< Number of driver state */
-    } t_eAPPACT_DriverState;
+	
+    //-----------------------------ENUM TYPES-----------------------------//
 	/* CAUTION : Automatic generated code section for Structure: Start */
 
 	/* CAUTION : Automatic generated code section for Structure: End */
-	//-----------------------------STRUCT TYPES---------------------------//
-    typedef union 
-    {
-        t_sint32 setPoint_s32;
-    } t_uAPPACT_GetValue;
-
-    typedef union 
-    {
-        t_sint32 setPoint_s32;
-    } t_uAPPACT_SetValue;
-
+    /**< Union to store the idx for convert management */
+   //-----------------------------STRUCT TYPES---------------------------//
 
 	/* CAUTION : Automatic generated code section : Start */
 
@@ -86,6 +84,8 @@
     // *                      Variables
     // ********************************************************************
     
+
+
     //********************************************************************************
     //                      Public functions - Prototyupes
     //********************************************************************************

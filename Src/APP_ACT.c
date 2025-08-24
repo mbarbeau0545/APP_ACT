@@ -35,9 +35,9 @@
 ///@brief fsm state to cfg state
 typedef enum 
 {
-    APPACT_FSM_CFGSTS_GET_CFG = 0,
+    APPACT_FSM_CFGSTS_INIT_DRIVER = 0,
+    APPACT_FSM_CFGSTS_GET_CFG,
     APPACT_FSM_CFGSTS_APPLY_CFG,
-    APPACT_FSM_CFGSTS_INIT_DRIVER,
 } t_eAPPACT_FsmCfgsts;
 
 ///@brief driver state 
@@ -76,7 +76,7 @@ typedef struct
 /* CAUTION : Automatic generated code section for Variable: Start */
 /* CAUTION : Automatic generated code section for Variable: End */
 static t_eCyclicModState g_AppAct_ModState_e = STATE_CYCLIC_CFG;
-static t_eAPPACT_FsmCfgsts g_FsmCfgSts_e = APPACT_FSM_CFGSTS_GET_CFG;
+static t_eAPPACT_FsmCfgsts g_FsmCfgSts_e = APPACT_FSM_CFGSTS_INIT_DRIVER;
 /**
  * @brief Sensors Interface Information
  */
@@ -330,6 +330,10 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
             {
                 *f_actValue_pf32 = tmpActValue_f32;
             }
+            else 
+            {
+                *f_actValue_pf32 = 0.0f;
+            }
         }
     }
 
@@ -386,6 +390,18 @@ static t_eReturnCode s_APPACT_ConfigurationState(void)
 
     switch(g_FsmCfgSts_e)
     {
+        case APPACT_FSM_CFGSTS_INIT_DRIVER:
+            Ret_e = s_APPACT_Fsm_CfgSts_InitDriver();
+            if(Ret_e == RC_OK)
+            {
+                Ret_e = RC_WARNING_PENDING;
+                g_FsmCfgSts_e = APPACT_FSM_CFGSTS_GET_CFG;
+            }
+            else if(Ret_e > RC_OK)
+            {
+                Ret_e = RC_WARNING_PENDING;
+            }
+        break;
         case APPACT_FSM_CFGSTS_GET_CFG:
             Ret_e = s_APPACT_Fsm_CfgSts_GetCfg();
             if(Ret_e == RC_OK)
@@ -402,20 +418,8 @@ static t_eReturnCode s_APPACT_ConfigurationState(void)
             Ret_e = s_APPACT_Fsm_CfgSts_ApplyCfg();
             if(Ret_e == RC_OK)
             {
-                Ret_e = RC_WARNING_PENDING;
+                // Ret_e = RC_OK;  // out of cfg sts
                 g_FsmCfgSts_e = APPACT_FSM_CFGSTS_INIT_DRIVER;
-            }
-            else if(Ret_e > RC_OK)
-            {
-                Ret_e = RC_WARNING_PENDING;
-            }
-        break;
-        case APPACT_FSM_CFGSTS_INIT_DRIVER:
-            Ret_e = s_APPACT_Fsm_CfgSts_InitDriver();
-            if(Ret_e == RC_OK)
-            {
-                // Ret_e = RC_OK; // out of cfg sts
-                g_FsmCfgSts_e = APPACT_FSM_CFGSTS_GET_CFG;
             }
             else if(Ret_e > RC_OK)
             {
@@ -484,9 +488,20 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void)
                 && (drvUsed_e < APPACT_DRV_NB))
                 {
                     g_ActDrvState_ae[drvUsed_e] = APPACT_DRV_STS_ENABLE;
+
+                    if((c_AppAct_SysDrvCfg_as[drvUsed_e].isFastTaskCyclic_b == (t_bool)TRUE)
+                    && (g_enableFastTask_b == (t_bool)FALSE))
+                    {
+                        g_enableFastTask_b = (t_bool)TRUE;
+                    }
                 }
 
                 actDeviceInfo_ps->isConfigured_b = (t_bool)TRUE;                
+            }
+            //---- ok actuators don't use ----//
+            else if(Ret_e == RC_WARNING_NO_OPERATION)
+            {
+                Ret_e = RC_OK;
             }
         }
         else
@@ -516,19 +531,10 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_InitDriver(void)
     Ret_e = RC_OK;
     for(LLDRV_u8 = (t_uint8)0; (LLDRV_u8 < APPACT_DRV_NB) && (Ret_e == RC_OK) ; LLDRV_u8++)
     {
-        if((c_AppAct_SysDrvCfg_as[LLDRV_u8].Init_pcb != NULL_FUNCTION)
-        && g_ActDrvState_ae[LLDRV_u8] == APPACT_DRV_STS_ENABLE)
+        if(c_AppAct_SysDrvCfg_as[LLDRV_u8].Init_pcb != NULL_FUNCTION)
         {
             Ret_e = (c_AppAct_SysDrvCfg_as[LLDRV_u8].Init_pcb)();
-
-            if((c_AppAct_SysDrvCfg_as[LLDRV_u8].isFastTaskCyclic_b == (t_bool)TRUE)
-            && (g_enableFastTask_b == (t_bool)FALSE)
-            && (Ret_e == RC_OK))
-            {
-                g_enableFastTask_b = (t_bool)TRUE;
-            }
-        }
-        
+        }        
     }
 
     return Ret_e;
