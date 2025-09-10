@@ -154,7 +154,11 @@ static t_eReturnCode s_APPACT_Operational(void);
  *	@brief      Perform preOperationnal action.\n
  */
 static void s_APPACT_FastTask(void);
-
+/**
+ *
+ *	@brief      Perform preOperationnal action.\n
+ */
+static void s_APPACT_DebugRoutine(void);
 //****************************************************************************
 //                      Public functions - Implementation
 //********************************************************************************
@@ -578,6 +582,8 @@ static t_eReturnCode s_APPACT_Operational(void)
         }
     }
 
+    s_APPACT_DebugRoutine();
+
     return Ret_e;
 }
 
@@ -600,6 +606,31 @@ static void s_APPACT_FastTask(void)
         {
             ASSERT((t_uint16)LLDRV_u8);
             ASSERT((t_uint16)Ret_e);
+        }
+    }
+
+    return;
+}
+
+/*********************************
+ * s_APPACT_DebugRoutine
+ *********************************/
+static void s_APPACT_DebugRoutine(void)
+{
+    t_eReturnCode Ret_e;
+    t_sint32 idxActIf_s32;
+    t_sAPPACT_SnsIfaceInfo * actIfInfo_ps;
+
+    for(idxActIf_s32 = 0 ; idxActIf_s32 < APPACT_ACTITF_NB ; idxActIf_s32 ++)
+    {
+        actIfInfo_ps = &g_ActInterfaceInfo_as[idxActIf_s32];
+        if(actIfInfo_ps->cfgInfo_ps->SigDebug_e < APPSIG_SIGNAL_NB)
+        {
+            Ret_e = APPSIG_SetSignalValue(actIfInfo_ps->cfgInfo_ps->SigDebug_e, actIfInfo_ps->actValue_f32);
+            if(Ret_e != RC_OK)
+            {
+                ASSERT((t_uint16)Ret_e);
+            }
         }
     }
 
