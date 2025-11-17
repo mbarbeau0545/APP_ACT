@@ -22,6 +22,19 @@
     // ********************************************************************
     // *                      Defines
     // ********************************************************************
+    ///@brief Define for normalize return function of spec files
+    #define APPACT_MOTOR_STS_OFF            ((t_float32)0.0f)
+    #define APPACT_MOTOR_STS_ON             ((t_float32)1.0f)
+    #define APPACT_MOTOR_STS_ENDSTOP_CW     ((t_float32)2.0f)
+    #define APPACT_MOTOR_STS_ENDSTOP_CCW    ((t_float32)3.0f)
+    
+    #define APPACT_SOFT_STOP                ((t_float32)0.0f)
+    #define APPACT_HARD_STOP                ((t_float32)-1.0f)
+    #define APPACT_ENABLE_MOTOR             ((t_float32)-2.0f)
+
+    ///@brief define normalize direction of spec files 
+    #define APPACT_DIRECTION_CW ((t_float32)0.0f)
+    #define APPACT_DIRECTION_CCW ((t_float32)1.0f)
     // ********************************************************************
     // *                      Types
     // ********************************************************************
@@ -31,12 +44,18 @@
     */
     typedef enum
     {
-        APPACT_ACTITF_MTR_XL_PULSE = 0,       /**< Actuator Device MTR_XL, Interface PULSE, Moteur X Left Pulses */
-        APPACT_ACTITF_MTR_XL_SPEED,             /**< Actuator Device MTR_XL, Interface SPEED, Moteur X Left Speed */
+        APPACT_ACTITF_MTR_XL_PULSE = 0,       /**< Actuator Device MTR_XL, Interface PULSE, Moteur XL Left Pulses */
+        APPACT_ACTITF_MTR_XL_SPEED,             /**< Actuator Device MTR_XL, Interface SPEED, Moteur XL Left Speed */
+        APPACT_ACTITF_MTR_XL_TRIGTIME,          /**< Actuator Device MTR_XL, Interface TRIGTIME, Moteur XL Left Trigger Time to plan sending pulse */
+        APPACT_ACTITF_MTR_XR_PULSE,             /**< Actuator Device MTR_XR, Interface PULSE, Moteur XR Left Pulses */
+        APPACT_ACTITF_MTR_XR_SPEED,             /**< Actuator Device MTR_XR, Interface SPEED, Moteur XR Left Speed */
+        APPACT_ACTITF_MTR_XR_TRIGTIME,          /**< Actuator Device MTR_XR, Interface TRIGTIME, Moteur XR RightTrigger Time to plan sending pulse */
         APPACT_ACTITF_MTR_Y_PULSE,              /**< Actuator Device MTR_Y, Interface PULSE, Moteur Y Pulses */
         APPACT_ACTITF_MTR_Y_SPEED,              /**< Actuator Device MTR_Y, Interface SPEED, Moteur Y Speed */
+        APPACT_ACTITF_MTR_Y_TRIGTIME,           /**< Actuator Device MTR_Y, Interface TRIGTIME, Moteur Y Trigger Time to plan sending pulse */
         APPACT_ACTITF_MTR_Z_PULSE,              /**< Actuator Device MTR_Z, Interface PULSE, Moteur Z Pulses */
         APPACT_ACTITF_MTR_Z_SPEED,              /**< Actuator Device MTR_Z, Interface SPEED, Moteur Z Speed */
+        APPACT_ACTITF_MTR_Z_TRIGTIME,           /**< Actuator Device MTR_Z, Interface TRIGTIME, Moteur Z Left Trigger Time to plan sending pulse */
     
         APPACT_ACTITF_NB,
     } t_eAPPACT_ActInterface;
@@ -57,6 +76,7 @@
     typedef enum
     {
         APPACT_ACTDVC_MTR_XL = 0,
+        APPACT_ACTDVC_MTR_XR,
         APPACT_ACTDVC_MTR_Y,
         APPACT_ACTDVC_MTR_Z,
     
