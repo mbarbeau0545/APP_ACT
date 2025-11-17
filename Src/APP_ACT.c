@@ -35,9 +35,10 @@
 ///@brief fsm state to cfg state
 typedef enum 
 {
-    APPACT_FSM_CFGSTS_INIT_DRIVER = 0,
-    APPACT_FSM_CFGSTS_GET_CFG,
-    APPACT_FSM_CFGSTS_APPLY_CFG,
+    APPACT_FSM_CFGSTS_INIT_DRIVER = 0,      //---- Initialisation of driver ----//
+    APPACT_FSM_CFGSTS_GET_CFG,              //---- Get xonfiguration from App Sys ----//
+    APPACT_FSM_CFGSTS_APPLY_CFG,            //---- Apply configuration ----//
+    APPACT_FSM_CFGSTS_SIG_REGISTER,         //---- Signal registration for Control Actuator Mode ----//
 } t_eAPPACT_FsmCfgsts;
 
 ///@brief driver state 
@@ -56,9 +57,10 @@ typedef enum
 //-----------------------------TYPEDEF TYPES---------------------------//
 typedef struct 
 {
-    t_float32 actValue_f32;            /**< For Debug Purpose */
+    t_float32 setActValue_f32;            /**< For Debug Purpose */
+    t_float32 getActValue_f32;            /**< For Debug Purpose */
     const t_sAPPACT_SysActCfg * cfgInfo_ps;
-} t_sAPPACT_SnsIfaceInfo;
+} t_sAPPACT_ActIfaceInfo;
 
 typedef struct 
 {
@@ -80,7 +82,7 @@ static t_eAPPACT_FsmCfgsts g_FsmCfgSts_e = APPACT_FSM_CFGSTS_INIT_DRIVER;
 /**
  * @brief Sensors Interface Information
  */
-static t_sAPPACT_SnsIfaceInfo g_ActInterfaceInfo_as[APPACT_ACTITF_NB];
+static t_sAPPACT_ActIfaceInfo g_ActInterfaceInfo_as[APPACT_ACTITF_NB];
 
 ///@brief Device Interface Information 
 static t_sAPPACT_ActDvcInfo g_ActDeviceInfo_as[APPACT_ACTDVC_NB];
@@ -90,7 +92,10 @@ static t_eAPPACT_DrvState g_ActDrvState_ae[APPACT_DRV_NB];
 
 ///@brief Fast Task Managment 
 static t_bool g_enableFastTask_b = FALSE;
-static t_bool g_isFastTaskON_b = FALSE;
+
+///@brief When Acutator Control Mode is ON, Logic cannot set values
+///            This happened whenever Ctrl Signal are used
+static t_bool g_isCtrlModeON_b = FALSE;
 //********************************************************************************
 //                      Local functions - Prototypes
 //********************************************************************************
@@ -117,7 +122,15 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_GetCfg(void);
 *
 *
 */
-static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void);
+static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void); 
+/**
+*
+*	@brief
+*	@note   
+*
+*
+*/
+static t_eReturnCode s_APPACT_Fsm_CfgSts_SigRegister(void);
 /**
 *
 *	@brief
@@ -159,6 +172,15 @@ static void s_APPACT_FastTask(void);
  *	@brief      Perform preOperationnal action.\n
  */
 static void s_APPACT_DebugRoutine(void);
+/**
+ * @brief This function handle the reception of signals from APPSIG
+ * ----------------------------------------------------------------------------
+ * @param[in] f_signal_e : signal ID
+ * @param[in] f_sigVal_f32 :signl; value
+ * ----------------------------------------------------------------------------
+ * @return void
+ */
+static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32 f_sigVal_f32);
 //****************************************************************************
 //                      Public functions - Implementation
 //********************************************************************************
@@ -183,7 +205,7 @@ t_eReturnCode APPACT_Init(void)
         }
 
         //---- set default value ----//
-        g_ActInterfaceInfo_as[idxSnsIf_u8].actValue_f32 = (t_float32)0.0f;
+        g_ActInterfaceInfo_as[idxSnsIf_u8].setActValue_f32 = (t_float32)0.0f;
         g_ActInterfaceInfo_as[idxSnsIf_u8].cfgInfo_ps = &c_AppAct_SysAct_as[idxSnsIf_u8];
     }
     
@@ -298,8 +320,8 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
 {
     t_eReturnCode Ret_e = RC_OK;
     t_eAPPACT_ActDeviceList actDeviceLink_e;
-    t_sAPPACT_SnsIfaceInfo * actItfInfo_ps;
-    t_float32 tmpActValue_f32 = 0.0f;
+    t_sAPPACT_ActIfaceInfo * actItfInfo_ps;
+    t_float32 tmpsetActValue_f32 = 0.0f;
 
     if(g_AppAct_ModState_e != STATE_CYCLIC_OPE)
     {
@@ -317,7 +339,7 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
     }
     else 
     {
-        actItfInfo_ps = (t_sAPPACT_SnsIfaceInfo *)(&g_ActInterfaceInfo_as[f_actuator_e]);
+        actItfInfo_ps = (t_sAPPACT_ActIfaceInfo *)(&g_ActInterfaceInfo_as[f_actuator_e]);
         actDeviceLink_e = actItfInfo_ps->cfgInfo_ps->deviceLink_e;
 
         if(g_ActDeviceInfo_as[actDeviceLink_e].isConfigured_b == (t_bool)FALSE)
@@ -328,15 +350,17 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
         else 
         {
             // call specific function to get value
-            Ret_e = actItfInfo_ps->cfgInfo_ps->GetValue_pcb(&tmpActValue_f32);
+            Ret_e = actItfInfo_ps->cfgInfo_ps->GetValue_pcb(&tmpsetActValue_f32);
             
             if(Ret_e == RC_OK)
             {
-                *f_actValue_pf32 = tmpActValue_f32;
+                *f_actValue_pf32 = tmpsetActValue_f32;
+                actItfInfo_ps->getActValue_f32 = tmpsetActValue_f32;
             }
             else 
             {
                 *f_actValue_pf32 = 0.0f;
+                actItfInfo_ps->getActValue_f32 = 0.0f;
             }
         }
     }
@@ -347,11 +371,11 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
 /*********************************
  * APPACT_SetActValue
  *********************************/
-t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 f_actValue_f32)
+t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 f_setActValue_f32)
 {
     t_eReturnCode Ret_e = RC_OK;
     t_eAPPACT_ActDeviceList actDeviceLink_e;
-    t_sAPPACT_SnsIfaceInfo * actItfInfo_ps;
+    t_sAPPACT_ActIfaceInfo * actItfInfo_ps;
 
     if(g_AppAct_ModState_e != STATE_CYCLIC_OPE)
     {
@@ -364,7 +388,7 @@ t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
     }
     else 
     {
-        actItfInfo_ps = (t_sAPPACT_SnsIfaceInfo *)(&g_ActInterfaceInfo_as[f_actuator_e]);
+        actItfInfo_ps = (t_sAPPACT_ActIfaceInfo *)(&g_ActInterfaceInfo_as[f_actuator_e]);
         actDeviceLink_e = actItfInfo_ps->cfgInfo_ps->deviceLink_e;
 
         if(g_ActDeviceInfo_as[actDeviceLink_e].isConfigured_b == (t_bool)FALSE)
@@ -372,11 +396,15 @@ t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
             Ret_e = RC_ERROR_MISSING_CONFIG;
             ASSERT((t_uint16)0);
         }
+        else if(g_isCtrlModeON_b == TRUE)
+        {
+            Ret_e = RC_WARNING_NOT_ALLOWED;
+        }
         else 
         {
             // call specific function to get value
-            Ret_e = actItfInfo_ps->cfgInfo_ps->SetValue_pcb(f_actValue_f32);
-            actItfInfo_ps->actValue_f32 = (t_float32)(f_actValue_f32);
+            Ret_e = actItfInfo_ps->cfgInfo_ps->SetValue_pcb(f_setActValue_f32);
+            actItfInfo_ps->setActValue_f32 = (t_float32)(f_setActValue_f32);
         }
     }
 
@@ -422,12 +450,20 @@ static t_eReturnCode s_APPACT_ConfigurationState(void)
             Ret_e = s_APPACT_Fsm_CfgSts_ApplyCfg();
             if(Ret_e == RC_OK)
             {
-                // Ret_e = RC_OK;  // out of cfg sts
-                g_FsmCfgSts_e = APPACT_FSM_CFGSTS_INIT_DRIVER;
+                Ret_e = RC_WARNING_PENDING;
+                g_FsmCfgSts_e = APPACT_FSM_CFGSTS_SIG_REGISTER;
             }
             else if(Ret_e > RC_OK)
             {
                 Ret_e = RC_WARNING_PENDING;
+            }
+        break;
+        case APPACT_FSM_CFGSTS_SIG_REGISTER:
+            Ret_e = s_APPACT_Fsm_CfgSts_SigRegister();
+            if(Ret_e == RC_OK)
+            {
+                // Ret_e = RC_OK;  // out of cfg sts
+                g_FsmCfgSts_e = APPACT_FSM_CFGSTS_INIT_DRIVER;
             }
         break;
         default:
@@ -473,14 +509,14 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void)
     t_eReturnCode Ret_e;
     t_sAPPACT_ActDvcInfo * actDeviceInfo_ps;
     t_eAPPACT_ActDriverList drvUsed_e;
-    static t_uint8 s_LLSNS_u8 = 0;   
+    static t_uint8 s_LLACT_u8 = 0;   
 
     // actuators configuration call
     Ret_e = RC_OK;
-    for(; (s_LLSNS_u8 < APPACT_ACTDVC_NB) && (Ret_e == RC_OK) ; s_LLSNS_u8++)
+    for(; (s_LLACT_u8 < APPACT_ACTDVC_NB) && (Ret_e == RC_OK) ; s_LLACT_u8++)
     {
         drvUsed_e = APPACT_DRV_NB;
-        actDeviceInfo_ps = (t_sAPPACT_ActDvcInfo *)(&g_ActDeviceInfo_as[s_LLSNS_u8]);
+        actDeviceInfo_ps = (t_sAPPACT_ActDvcInfo *)(&g_ActDeviceInfo_as[s_LLACT_u8]);
         if(actDeviceInfo_ps->dvcOpeCfg_ps->SetCfg_pcb != NULL_FUNCTION)
         {
             Ret_e = actDeviceInfo_ps->dvcOpeCfg_ps->SetCfg_pcb( actDeviceInfo_ps->dvcCfg_u8, 
@@ -511,10 +547,10 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void)
         else
         {
             Ret_e = RC_ERROR_PTR_NULL;
-            ASSERT((t_uint16)s_LLSNS_u8);
+            ASSERT((t_uint16)s_LLACT_u8);
         }
     }
-    if((s_LLSNS_u8 < APPACT_ACTDVC_NB)
+    if((s_LLACT_u8 < APPACT_ACTDVC_NB)
     && (Ret_e >= RC_OK)) // only if problem has not been captured yet
     {// problem or waiting on init or sensors config just waiting for next cycle
         Ret_e = RC_WARNING_BUSY;
@@ -523,6 +559,29 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void)
     return Ret_e;
 }
 
+/*********************************
+ * s_APPACT_Fsm_CfgSts_SigRegister
+ *********************************/
+static t_eReturnCode s_APPACT_Fsm_CfgSts_SigRegister(void)
+{
+    t_eReturnCode Ret_e;
+    t_uint8 actIfId_u8;
+    t_sAPPACT_ActIfaceInfo * actIfInfo_ps = NULL;
+
+    Ret_e = RC_OK;
+    for(actIfId_u8 = 0; (actIfId_u8 < APPACT_ACTITF_NB) && (Ret_e == RC_OK) ; actIfId_u8++)
+    {
+        actIfInfo_ps = &g_ActInterfaceInfo_as[actIfId_u8];
+
+        if(actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e != APPSIG_SIGNAL_NB)
+        {
+            Ret_e = APPSIG_AddRcvMsgCallback(   actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e,
+                                                s_APPACT_SigReceptionCallback);
+        }
+    }
+
+    return Ret_e;
+}   
 /*********************************
  * s_APPACT_Fsm_CfgSts_InitDriver
  *********************************/
@@ -619,14 +678,61 @@ static void s_APPACT_DebugRoutine(void)
 {
     t_eReturnCode Ret_e;
     t_sint32 idxActIf_s32;
-    t_sAPPACT_SnsIfaceInfo * actIfInfo_ps;
+    t_sAPPACT_ActIfaceInfo * actIfInfo_ps;
 
     for(idxActIf_s32 = 0 ; idxActIf_s32 < APPACT_ACTITF_NB ; idxActIf_s32 ++)
     {
         actIfInfo_ps = &g_ActInterfaceInfo_as[idxActIf_s32];
-        if(actIfInfo_ps->cfgInfo_ps->SigDebug_e < APPSIG_SIGNAL_NB)
+        if(actIfInfo_ps->cfgInfo_ps->SigSetDebug_e < APPSIG_SIGNAL_NB)
         {
-            Ret_e = APPSIG_SetSignalValue(actIfInfo_ps->cfgInfo_ps->SigDebug_e, actIfInfo_ps->actValue_f32);
+            Ret_e = APPSIG_SetSignalValue(  actIfInfo_ps->cfgInfo_ps->SigSetDebug_e, 
+                                            actIfInfo_ps->setActValue_f32);
+            if(Ret_e != RC_OK)
+            {
+                ASSERT((t_uint16)Ret_e);
+            }
+        }
+        if(actIfInfo_ps->cfgInfo_ps->SigGetDebug_e < APPSIG_SIGNAL_NB)
+        {
+            Ret_e = APPSIG_SetSignalValue(  actIfInfo_ps->cfgInfo_ps->SigGetDebug_e, 
+                                            actIfInfo_ps->getActValue_f32);
+            if(Ret_e != RC_OK)
+            {
+                ASSERT((t_uint16)Ret_e);
+            }
+        }
+    }
+
+    return;
+}
+
+/*********************************
+ * s_APPACT_SigReceptionCallback
+ *********************************/
+static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32 f_sigVal_f32)
+{
+    t_eReturnCode Ret_e;
+    t_uint8 actIfId_u8 = 0;
+    t_sint16 tmpValue_s16;
+    t_sAPPACT_ActIfaceInfo * actIfInfo_ps = NULL;
+
+    //---- First update control mode ----//
+    if(g_isCtrlModeON_b == FALSE)
+    {
+        g_isCtrlModeON_b = TRUE;
+    }
+
+    //---- Find out the actuator interface link to the signal ---//
+    for(actIfId_u8 = 0 ; actIfId_u8 < APPACT_ACTITF_NB ; actIfId_u8++)
+    {
+        actIfInfo_ps = &g_ActInterfaceInfo_as[actIfId_u8];
+
+        if(actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e == f_signal_e)
+        {
+            //---- value is a signed 16 bits in SignalViewer ----//
+            tmpValue_s16 = (t_sint16)f_sigVal_f32;
+            //---- call specifiic function link ----//
+            Ret_e = actIfInfo_ps->cfgInfo_ps->SetValue_pcb((t_float32)tmpValue_s16);
             if(Ret_e != RC_OK)
             {
                 ASSERT((t_uint16)Ret_e);
