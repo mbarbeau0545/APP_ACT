@@ -733,9 +733,13 @@ static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32
             tmpValue_s16 = (t_sint16)f_sigVal_f32;
             //---- call specifiic function link ----//
             Ret_e = actIfInfo_ps->cfgInfo_ps->SetValue_pcb((t_float32)tmpValue_s16);
-            if(Ret_e != RC_OK)
+            if(Ret_e < RC_OK)
             {
                 ASSERT((t_uint16)Ret_e);
+            }
+            else 
+            {
+                actIfInfo_ps->setActValue_f32 = f_sigVal_f32;
             }
         }
     }
