@@ -399,7 +399,10 @@ t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
         {
             // call specific function to get value
             Ret_e = actItfInfo_ps->cfgInfo_ps->SetValue_pcb(f_setActValue_f32);
-            actItfInfo_ps->setActValue_f32 = (t_float32)(f_setActValue_f32);
+            if(Ret_e >= RC_OK)
+            {
+                actItfInfo_ps->setActValue_f32 = (t_float32)(f_setActValue_f32);
+            }
         }
     }
 
