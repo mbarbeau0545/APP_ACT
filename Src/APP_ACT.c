@@ -711,7 +711,6 @@ static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32
 {
     t_eReturnCode Ret_e;
     t_uint8 actIfId_u8 = 0;
-    t_sint16 tmpValue_s16;
     t_sAPPACT_ActIfaceInfo * actIfInfo_ps = NULL;
 
     //---- First update control mode ----//
@@ -727,10 +726,8 @@ static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32
 
         if(actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e == f_signal_e)
         {
-            //---- value is a signed 16 bits in SignalViewer ----//
-            tmpValue_s16 = (t_sint16)f_sigVal_f32;
             //---- call specifiic function link ----//
-            Ret_e = actIfInfo_ps->cfgInfo_ps->SetValue_pcb((t_float32)tmpValue_s16);
+            Ret_e = actIfInfo_ps->cfgInfo_ps->SetValue_pcb(f_sigVal_f32);
             if(Ret_e < RC_OK)
             {
                 ASSERT((t_uint16)Ret_e);
