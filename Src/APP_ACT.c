@@ -339,8 +339,8 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
 
         if(g_ActDeviceInfo_as[actDeviceLink_e].isConfigured_b == (t_bool)FALSE)
         {
-            Ret_e = RC_ERROR_MISSING_CONFIG;
-            ASSERT((t_uint16)0);
+            *f_actValue_pf32 = 0.0F;
+            Ret_e = RC_WARNING_MISSING_CONFIG;
         }
         else 
         {
