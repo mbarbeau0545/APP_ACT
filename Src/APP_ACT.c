@@ -573,7 +573,7 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_SigRegister(void)
 
         if(actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e != APPSIG_SIGNAL_NB)
         {
-            Ret_e = APPSIG_AddRcvMsgCallback(   actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e,
+            Ret_e = APPSIG_AddRcvSigCallback(   actIfInfo_ps->cfgInfo_ps->SigCtrlDebug_e,
                                                 s_APPACT_SigReceptionCallback);
         }
     }
