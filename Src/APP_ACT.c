@@ -250,6 +250,10 @@ t_eReturnCode APPACT_Cyclic(void)
         {
             g_AppAct_ModState_e = STATE_CYCLIC_PREOPE;
         }
+        else if(Ret_e < RC_OK)
+        {
+            g_AppAct_ModState_e = STATE_CYCLIC_ERROR;
+        }
         break;
     }
     case STATE_CYCLIC_PREOPE:
@@ -322,7 +326,7 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
     {
         Ret_e = RC_WARNING_BUSY;
     }
-    if(f_actValue_pf32 == (t_float32 *)NULL)
+    else if(f_actValue_pf32 == (t_float32 *)NULL)
     {
         Ret_e = RC_ERROR_PTR_NULL;
         ASSERT((t_uint16)0);
@@ -388,8 +392,8 @@ t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
 
         if(g_ActDeviceInfo_as[actDeviceLink_e].isConfigured_b == (t_bool)FALSE)
         {
-            Ret_e = RC_ERROR_MISSING_CONFIG;
-            ASSERT((t_uint16)0);
+            Ret_e = RC_WARNING_MISSING_CONFIG;
+            ASSERT((t_uint16)actDeviceLink_e);
         }
         else if(g_isCtrlModeON_b == TRUE)
         {
@@ -540,6 +544,10 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void)
             else if(Ret_e == RC_WARNING_NO_OPERATION)
             {
                 Ret_e = RC_OK;
+            }
+            else if(Ret_e < RC_OK)
+            {
+                ASSERT((t_uint16)s_LLACT_u8);
             }
         }
         else
@@ -736,6 +744,11 @@ static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32
             {
                 actIfInfo_ps->setActValue_f32 = f_sigVal_f32;
             }
+
+            FMKSRL_LOG("[ACT] : Receive for %d value %d, retcode -> %d\r\n", 
+                        actIfId_u8, 
+                        (t_uint32)f_sigVal_f32,
+                        (t_uint32)Ret_e);
         }
     }
 
