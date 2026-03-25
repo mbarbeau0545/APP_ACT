@@ -747,7 +747,7 @@ static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32
 
             FMKSRL_LOG("[ACT] : Receive for %d value %d, retcode -> %d\r\n", 
                         actIfId_u8, 
-                        (t_uint32)f_sigVal_f32,
+                        (t_sint32)f_sigVal_f32,
                         (t_uint32)Ret_e);
         }
     }
