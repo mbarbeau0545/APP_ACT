@@ -99,53 +99,17 @@ static t_bool g_isCtrlModeON_b = FALSE;
 //********************************************************************************
 //                      Local functions - Prototypes
 //********************************************************************************
-/**
-*
-*	@brief
-*	@note   
-*
-*
-*/
+/** @brief Advances the actuator-module configuration state machine. @return State-processing status. */
 static t_eReturnCode s_APPACT_ConfigurationState(void);
-/**
-*
-*	@brief
-*	@note   
-*
-*
-*/
+/** @brief Gets actuator configuration data. @return Configuration status. */
 static t_eReturnCode s_APPACT_Fsm_CfgSts_GetCfg(void);
-/**
-*
-*	@brief
-*	@note   
-*
-*
-*/
+/** @brief Applies actuator configuration data. @return Configuration status. */
 static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void); 
-/**
-*
-*	@brief
-*	@note   
-*
-*
-*/
+/** @brief Registers configured actuator signals. @return Registration status. */
 static t_eReturnCode s_APPACT_Fsm_CfgSts_SigRegister(void);
-/**
-*
-*	@brief
-*	@note   
-*
-*
-*/
+/** @brief Initializes configured actuator drivers. @return Initialization status. */
 static t_eReturnCode s_APPACT_Fsm_CfgSts_InitDriver(void);
-/**
-*
-*	@brief
-*	@note   
-*
-*
-*/
+/** @brief Performs pre-operational actuator processing. @return Processing status. */
 static t_eReturnCode s_APPACT_PreOperational(void);
 /**
  *

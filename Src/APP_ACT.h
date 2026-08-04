@@ -73,7 +73,7 @@
     *
     *	@brief Function to know the module state.\n 
     *
-    *	@param[in]  f_State_pe : store the value, value from @ref t_eCyclicModState
+    *	@param[out] f_State_pe : destination for the current module state.
     *
     *   @retval RC_OK                             @ref RC_OK
     *   @retval RC_ERROR_PTR_NULL                 @ref RC_ERROR_PTR_NUL
@@ -92,8 +92,8 @@
     *
     *	@brief  Get actuator value 
     *
-    *	@param[in]  f_actuator_e   : actuator enum
-    *	@param[in]  f_value_ps16   : storage for the value 
+    *	@param[in]  f_actuator_e : actuator interface identifier.
+    *	@param[out] f_actValue_pf32 : destination for the current actuator value.
     * 
     */
     t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 * f_actValue_pf32);
@@ -102,7 +102,7 @@
     *	@brief      Set value for an actuator
     *
     *	@param[in]  f_actuator_e   : actuator enum
-    *	@param[in] f_value_s16 : value to set
+    *	@param[in] f_actValue_f32 : value to apply to the actuator.
     *
     */
     t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32  f_actValue_f32);
