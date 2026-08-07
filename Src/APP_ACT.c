@@ -165,7 +165,7 @@ t_eReturnCode APPACT_Init(void)
         || c_AppAct_SysAct_as[idxSnsIf_u8].SetValue_pcb == NULL_FUNCTION)
         {
             Ret_e = RC_ERROR_PARAM_INVALID;
-            ASSERT((t_uint16)idxSnsIf_u8);
+            ASSERT((t_sint32)idxSnsIf_u8);
         }
 
         //---- set default value ----//
@@ -178,7 +178,7 @@ t_eReturnCode APPACT_Init(void)
         if(c_AppAct_ActDvcOpeCfg_as[idxDvcAct_u8].SetCfg_pcb == NULL_FUNCTION)
         {
             Ret_e = RC_ERROR_PARAM_INVALID;
-            ASSERT((t_uint16)idxDvcAct_u8);
+            ASSERT((t_sint32)idxDvcAct_u8);
         }
         else
         {
@@ -293,12 +293,12 @@ t_eReturnCode APPACT_GetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
     else if(f_actValue_pf32 == (t_float32 *)NULL)
     {
         Ret_e = RC_ERROR_PTR_NULL;
-        ASSERT((t_uint16)0);
+        ASSERT((t_sint32)0);
     }
     else if(f_actuator_e > APPACT_ACTITF_NB)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
-        ASSERT((t_uint16)f_actuator_e);
+        ASSERT((t_sint32)f_actuator_e);
     }
     else 
     {
@@ -347,7 +347,7 @@ t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
     else if(f_actuator_e > APPACT_ACTITF_NB)
     {
         Ret_e = RC_ERROR_PARAM_INVALID;
-        ASSERT((t_uint16)f_actuator_e);
+        ASSERT((t_sint32)f_actuator_e);
     }
     else 
     {
@@ -357,7 +357,7 @@ t_eReturnCode APPACT_SetActValue(t_eAPPACT_ActInterface f_actuator_e, t_float32 
         if(g_ActDeviceInfo_as[actDeviceLink_e].isConfigured_b == (t_bool)FALSE)
         {
             Ret_e = RC_WARNING_MISSING_CONFIG;
-            ASSERT((t_uint16)actDeviceLink_e);
+            ASSERT((t_sint32)actDeviceLink_e);
         }
         else if(g_isCtrlModeON_b == TRUE)
         {
@@ -511,13 +511,13 @@ static t_eReturnCode s_APPACT_Fsm_CfgSts_ApplyCfg(void)
             }
             else if(Ret_e < RC_OK)
             {
-                ASSERT((t_uint16)s_LLACT_u8);
+                ASSERT((t_sint32)s_LLACT_u8);
             }
         }
         else
         {
             Ret_e = RC_ERROR_PTR_NULL;
-            ASSERT((t_uint16)s_LLACT_u8);
+            ASSERT((t_sint32)s_LLACT_u8);
         }
     }
     if((s_LLACT_u8 < APPACT_ACTDVC_NB)
@@ -606,8 +606,8 @@ static t_eReturnCode s_APPACT_Operational(void)
         }
         if(Ret_e < RC_OK)
         {
-            ASSERT((t_uint16)LLDRV_u8);
-            ASSERT((t_uint16)Ret_e);
+            ASSERT((t_sint32)LLDRV_u8);
+            ASSERT((t_sint32)Ret_e);
         }
     }
 
@@ -633,8 +633,8 @@ static void s_APPACT_FastTask(void)
         }
         if(Ret_e < RC_OK)
         {
-            ASSERT((t_uint16)LLDRV_u8);
-            ASSERT((t_uint16)Ret_e);
+            ASSERT((t_sint32)LLDRV_u8);
+            ASSERT((t_sint32)Ret_e);
         }
     }
 
@@ -659,7 +659,7 @@ static void s_APPACT_DebugRoutine(void)
                                             actIfInfo_ps->setActValue_f32);
             if(Ret_e != RC_OK)
             {
-                ASSERT((t_uint16)Ret_e);
+                ASSERT((t_sint32)Ret_e);
             }
         }
         if(actIfInfo_ps->cfgInfo_ps->SigGetDebug_e < APPSIG_SIGNAL_NB)
@@ -668,7 +668,7 @@ static void s_APPACT_DebugRoutine(void)
                                             actIfInfo_ps->getActValue_f32);
             if(Ret_e != RC_OK)
             {
-                ASSERT((t_uint16)Ret_e);
+                ASSERT((t_sint32)Ret_e);
             }
         }
     }
@@ -702,7 +702,7 @@ static void s_APPACT_SigReceptionCallback(t_eAPPSIG_Signal f_signal_e, t_float32
             Ret_e = actIfInfo_ps->cfgInfo_ps->SetValue_pcb(f_sigVal_f32);
             if(Ret_e < RC_OK)
             {
-                ASSERT((t_uint16)Ret_e);
+                ASSERT((t_sint32)Ret_e);
             }
             else 
             {
